@@ -1,35 +1,46 @@
 grammar YeSQLGrammar2;
 dao : version queries;
 
-version: (COMMENT_MARKER WS VERSION_TAG WS NON_WS)  | (COMMENT_START   WS VERSION_TAG WS NON_WS COMMENT_END);
-
+version: COMMENT_MARKER WS? VERSION_TAG WS NUMBER NEWLINE;
+NUMBER: DIGIT+;
 queries: query* EOF;
-query: docstring? name param* result* paramAggregatorType? resultAggregatorType?  statement;
+query: docstring? name param* (paramAggregatorType|resultAggregatorType)? (paramAggregatorType|resultAggregatorType)?  statement;
 
 
+//statement: line (line | comment| resultTypeHolderLine)*;
 statement: line (line | comment)*;
 docstring: comment+;
 
 name: WS? COMMENT_MARKER WS? NAME_TAG WS? NON_WS WS? NEWLINE;
 param: WS? COMMENT_MARKER WS* PARAM_TAG (NON_WS|WS)+ NEWLINE;
-result: WS? COMMENT_MARKER WS*   RESULT_TAG (NON_WS|WS)+ NEWLINE;
 comment: WS? COMMENT_MARKER WS? ~(NAME_TAG|PARAM_TAG) (NON_WS|WS)+ NEWLINE;
 line: WS? ~COMMENT_MARKER (NON_WS|WS)* (COMMENT_MARKER (NON_WS|WS)*)? NEWLINE;
-paramAggregatorType: WS? PARAM WS+ IMPLEMENTS WS+ NON_WS+ (WS* ',' WS* NON_WS)* NEWLINE ;
-resultAggregatorType: WS? RESULT WS+ IMPLEMENTS WS+ NON_WS+ (WS* ',' WS* NON_WS)* NEWLINE ;
+paramAggregatorType: WS? PARAM WS IMPLEMENTS WS NON_WS (WS ',' WS NON_WS)* NEWLINE ;
+resultAggregatorType: WS? RESULT WS IMPLEMENTS WS NON_WS (WS ',' WS NON_WS)* NEWLINE ;
+//resultTypeHolderLine: WS? resultColumn (WS AS WS alias)? WS? (COMMENT_MARKER WS? TYPE_TAG WS type WS? COMMENT_END? NEWLINE;
 
+alias: WORD;
+
+type: WORD('.'WORD)*;
+resultColumn: WORD ('.'WORD)?;
+
+COMMENT_MARKER: '--';
 VERSION_TAG: V E R S I O N;
 NAME_TAG: N A M E ':';
 PARAM_TAG: '@' PARAM;
-RESULT_TAG: '@' RESULT;
+TYPE_TAG: '@' T Y P E;
 
-NEWLINE: ('\n' | '\r\n')+;
-WS: (' ' | '\t')+;
+
+WS : [ \t\r]+ -> skip ; // skip spaces, tabs, newlines
+//WS: (' ' | '\t')+;
+NEWLINE: WS? ('\n' | '\r\n')+;
 NON_WS: ~(' ' | '\t' | '\n')+;
 
-COMMENT_START: '/*';
-COMMENT_END: '*/';
-COMMENT_MARKER: '--';
+WORD:  ( 'a'..'z' | 'A'..'Z' )+;
+DIGIT: ('0'..'9');
+AS: A S;
+
+//SELECT: S E L E C T;
 
 PARAM: P A R A M ;
 IMPLEMENTS: I M P L E M E N T S;
@@ -61,3 +72,5 @@ fragment W:('w'|'W');
 fragment X:('x'|'X');
 fragment Y:('y'|'Y');
 fragment Z:('z'|'Z');
+
+

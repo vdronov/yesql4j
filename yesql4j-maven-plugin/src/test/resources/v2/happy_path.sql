@@ -1,4 +1,6 @@
--- name: get-users-amounts
+-- Version 2
+
+-- name: get-User-Amounts
 -- @param java.util.Set<Long> usersIds
 -- @param java.util.Set<Integer> refillTypes
 -- @param java.util.Set<Integer> withdrawalTypes
@@ -7,7 +9,8 @@
 -- @param java.util.Set<Integer> bonusTypes
 -- @param java.util.Set<Integer> bonusWageringTypes
 -- @param java.util.Set<Integer> allTypes
-
+-- param implements  java.util.Runnable
+-- result implements java.util.Runnable
 select
        sum(if(type in (:refillTypes), amount, 0))           as refillAmount, --@type java.math.BigDecimal
        sum(if(type in (:withdrawalTypes), amount, 0))       as withdrawalAmount, --@type java.math.BigDecimal
@@ -16,8 +19,8 @@ select
        sum(if(type in (:bonusTypes), amount, 0))            as bonusAmount, --@type java.math.BigDecimal
        sum(if(type in (:bonusWageringTypes), amount, 0))    as bonusWageringAmount, --@type java.math.BigDecimal
        sum(if(type in (:bonusRejectionTypes), amount, 0))   as bonusRejectedAmount, --@type java.math.BigDecimal
-       currency,
-       user_id
+       currency, --@type java.lang.Long
+       user_id --@type java.lang.Long
 from user_final_amounts_aggregator
          use index (user_id_type_idx)
 where user_id in (:usersIds)
